@@ -170,8 +170,6 @@ def path_is_clear(start, end, board):
 
 
 def main():
-    en_passant_target = None  # Will be set to (row, col) of capturable pawn
-    turn = 'w' #White starts
     pygame.init()
     win = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Basic Chess")
@@ -180,6 +178,8 @@ def main():
     images = load_images()
     board = init_board()
     selected_piece = None
+    en_passant_target = None  # Will be set to (row, col) of capturable pawn
+    turn = 'w' #White starts
 
     run = True
     while run:
