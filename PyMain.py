@@ -169,6 +169,7 @@ def path_is_clear(start, end, board):
 
 
 def main():
+    turn = 'w' #White starts
     pygame.init()
     win = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Basic Chess")
@@ -194,12 +195,12 @@ def main():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 row, col = get_row_col_from_mouse(pygame.mouse.get_pos())
                 piece = board[row][col]
-                if piece:
-                    selected_piece = {
+                    if piece and piece[0] == turn:  # Only allow selecting current player's piece
+                        selected_piece = {
                         'piece': piece,
                         'pos': (row, col),
                         'mouse_pos': pygame.mouse.get_pos()
-                    }
+                        }
 
             elif event.type == pygame.MOUSEBUTTONUP:
                if selected_piece:
@@ -211,6 +212,7 @@ def main():
                        if is_valid_move(piece, (old_row, old_col), (new_row, new_col), board):
                            board[new_row][new_col] = piece
                            board[old_row][old_col] = None
+                           turn = 'b' if turn == 'w' else 'w'  # Switch turns
                    selected_piece = None
 
             elif event.type == pygame.MOUSEMOTION:
