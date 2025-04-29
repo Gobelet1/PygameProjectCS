@@ -216,7 +216,7 @@ def main():
                            board[old_row][old_col] = None
                            # En passant capture
                        if piece[1] == 'p' and (new_row, new_col) == en_passant_target:
-                       board[old_row][new_col] = None  # Remove the captured pawn
+                           board[old_row][new_col] = None  # Remove the captured pawn
 
                        # Handle en passant eligibility
                        if piece[1] == 'p' and abs(new_row - old_row) == 2:
