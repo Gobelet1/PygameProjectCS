@@ -126,6 +126,9 @@ def is_valid_move(piece, start, end, board):
                 return True
         elif abs(dc) == 1 and dr == direction and destination and destination[0] != color:
             return True
+        #En Passant Capture
+        elif abs(dc) == 1 and dr == direction and (end_row, end_col) == en_passant_target:
+            return True
 
     elif piece_type == 'r':  # Rook
         if dr == 0 or dc == 0:
@@ -167,6 +170,7 @@ def path_is_clear(start, end, board):
 
 
 def main():
+    en_passant_target = None  # Will be set to (row, col) of capturable pawn
     turn = 'w' #White starts
     pygame.init()
     win = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -210,7 +214,17 @@ def main():
                        if is_valid_move(piece, (old_row, old_col), (new_row, new_col), board):
                            board[new_row][new_col] = piece
                            board[old_row][old_col] = None
-                           turn = 'b' if turn == 'w' else 'w'  # Switch turns
+                           # En passant capture
+                       if piece[1] == 'p' and (new_row, new_col) == en_passant_target:
+                       board[old_row][new_col] = None  # Remove the captured pawn
+
+                       # Handle en passant eligibility
+                       if piece[1] == 'p' and abs(new_row - old_row) == 2:
+                           en_passant_target = ((old_row + new_row) // 2, new_col)
+                       else:
+                           en_passant_target = None
+
+                       turn = 'b' if turn == 'w' else 'w'
                    selected_piece = None
 
             elif event.type == pygame.MOUSEMOTION:
