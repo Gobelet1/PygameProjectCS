@@ -105,7 +105,6 @@ def is_valid_move(piece, start, end, board):
 
     return False  # Invalid move
 def is_valid_move(piece, start, end, board):
-    print(f"Checking move for {piece} from {start} to {end}")
     piece_type = piece[1]  # 'p', 'r', 'n', 'b', 'q', 'k'
     color = piece[0]       # 'w' or 'b'
     start_row, start_col = start
@@ -115,7 +114,6 @@ def is_valid_move(piece, start, end, board):
 
     destination = board[end_row][end_col]
     if destination and destination[0] == color:
-        print("Blocked: cannot capture own piece")
         return False  # Can't capture own piece
 
     if piece_type == 'p':  # Pawn
