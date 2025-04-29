@@ -1,7 +1,7 @@
 import pygame
-pygame.mixer.quit()
 import sys
 # CHESS BOARD
+pygame.mixer.quit()
 # Constants
 WIDTH, HEIGHT = 640, 640
 ROWS, COLS = 8, 8
