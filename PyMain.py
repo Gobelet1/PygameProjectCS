@@ -205,9 +205,9 @@ def main():
                    old_row, old_col = selected_piece['pos']
                    piece = selected_piece['piece']
 
-               if is_valid_move(piece, (old_row, old_col), (new_row, new_col), board):
-                   board[new_row][new_col] = piece
-                   board[old_row][old_col] = None
+                   if is_valid_move(piece, (old_row, old_col), (new_row, new_col), board):
+                       board[new_row][new_col] = piece
+                       board[old_row][old_col] = None
                    selected_piece = None
 
             elif event.type == pygame.MOUSEMOTION:
