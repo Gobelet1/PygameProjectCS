@@ -105,6 +105,7 @@ def is_valid_move(piece, start, end, board):
 
     return False  # Invalid move
 def is_valid_move(piece, start, end, board):
+    print(f"Checking move for {piece} from {start} to {end}")
     piece_type = piece[1]  # 'p', 'r', 'n', 'b', 'q', 'k'
     color = piece[0]       # 'w' or 'b'
     start_row, start_col = start
@@ -114,6 +115,7 @@ def is_valid_move(piece, start, end, board):
 
     destination = board[end_row][end_col]
     if destination and destination[0] == color:
+        print("Blocked: cannot capture own piece")
         return False  # Can't capture own piece
 
     if piece_type == 'p':  # Pawn
@@ -205,9 +207,10 @@ def main():
                    old_row, old_col = selected_piece['pos']
                    piece = selected_piece['piece']
 
-                   if is_valid_move(piece, (old_row, old_col), (new_row, new_col), board):
-                       board[new_row][new_col] = piece
-                       board[old_row][old_col] = None
+                   if 0 <= new_row < 8 and 0 <= new_col < 8:
+                       if is_valid_move(piece, (old_row, old_col), (new_row, new_col), board):
+                           board[new_row][new_col] = piece
+                           board[old_row][old_col] = None
                    selected_piece = None
 
             elif event.type == pygame.MOUSEMOTION:
