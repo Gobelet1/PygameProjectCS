@@ -60,6 +60,111 @@ def draw_pieces(win, board, images, selected_piece):
 def get_row_col_from_mouse(pos):
     x, y = pos
     return y // SQUARE_SIZE, x // SQUARE_SIZE
+def is_valid_move(piece, start, end, board):
+    piece_type = piece[1]  # 'p', 'r', 'n', 'b', 'q', 'k'
+    color = piece[0]       # 'w' or 'b'
+    start_row, start_col = start
+    end_row, end_col = end
+    dr = end_row - start_row
+    dc = end_col - start_col
+
+    destination = board[end_row][end_col]
+    if destination and destination[0] == color:
+        return False  # Can't capture own piece
+
+    if piece_type == 'p':  # Pawn
+        direction = -1 if color == 'w' else 1
+        start_row_home = 6 if color == 'w' else 1
+        if dc == 0:
+            if dr == direction and not destination:
+                return True
+            if dr == 2 * direction and start_row == start_row_home and not board[start_row + direction][start_col] and not destination:
+                return True
+        elif abs(dc) == 1 and dr == direction and destination and destination[0] != color:
+            return True
+
+    elif piece_type == 'r':  # Rook
+        if dr == 0 or dc == 0:
+            return path_is_clear(start, end, board)
+
+    elif piece_type == 'n':  # Knight
+        if (abs(dr), abs(dc)) in [(2, 1), (1, 2)]:
+            return True
+
+    elif piece_type == 'b':  # Bishop
+        if abs(dr) == abs(dc):
+            return path_is_clear(start, end, board)
+
+    elif piece_type == 'q':  # Queen
+        if dr == 0 or dc == 0 or abs(dr) == abs(dc):
+            return path_is_clear(start, end, board)
+
+    elif piece_type == 'k':  # King
+        if max(abs(dr), abs(dc)) == 1:
+            return True
+
+    return False  # Invalid move
+def is_valid_move(piece, start, end, board):
+    piece_type = piece[1]  # 'p', 'r', 'n', 'b', 'q', 'k'
+    color = piece[0]       # 'w' or 'b'
+    start_row, start_col = start
+    end_row, end_col = end
+    dr = end_row - start_row
+    dc = end_col - start_col
+
+    destination = board[end_row][end_col]
+    if destination and destination[0] == color:
+        return False  # Can't capture own piece
+
+    if piece_type == 'p':  # Pawn
+        direction = -1 if color == 'w' else 1
+        start_row_home = 6 if color == 'w' else 1
+        if dc == 0:
+            if dr == direction and not destination:
+                return True
+            if dr == 2 * direction and start_row == start_row_home and not board[start_row + direction][start_col] and not destination:
+                return True
+        elif abs(dc) == 1 and dr == direction and destination and destination[0] != color:
+            return True
+
+    elif piece_type == 'r':  # Rook
+        if dr == 0 or dc == 0:
+            return path_is_clear(start, end, board)
+
+    elif piece_type == 'n':  # Knight
+        if (abs(dr), abs(dc)) in [(2, 1), (1, 2)]:
+            return True
+
+    elif piece_type == 'b':  # Bishop
+        if abs(dr) == abs(dc):
+            return path_is_clear(start, end, board)
+
+    elif piece_type == 'q':  # Queen
+        if dr == 0 or dc == 0 or abs(dr) == abs(dc):
+            return path_is_clear(start, end, board)
+
+    elif piece_type == 'k':  # King
+        if max(abs(dr), abs(dc)) == 1:
+            return True
+
+    return False  # Invalid move
+def path_is_clear(start, end, board):
+    r1, c1 = start
+    r2, c2 = end
+    dr = r2 - r1
+    dc = c2 - c1
+
+    step_r = (dr // abs(dr)) if dr != 0 else 0
+    step_c = (dc // abs(dc)) if dc != 0 else 0
+
+    r, c = r1 + step_r, c1 + step_c
+    while (r, c) != (r2, c2):
+        if board[r][c] is not None:
+            return False
+        r += step_r
+        c += step_c
+    return True
+
 
 def main():
     pygame.init()
@@ -95,12 +200,15 @@ def main():
                     }
 
             elif event.type == pygame.MOUSEBUTTONUP:
-                if selected_piece:
-                    new_row, new_col = get_row_col_from_mouse(pygame.mouse.get_pos())
-                    old_row, old_col = selected_piece['pos']
-                    board[new_row][new_col] = selected_piece['piece']
-                    board[old_row][old_col] = None
-                    selected_piece = None
+               if selected_piece:
+                   new_row, new_col = get_row_col_from_mouse(pygame.mouse.get_pos())
+                   old_row, old_col = selected_piece['pos']
+                   piece = selected_piece['piece']
+
+               if is_valid_move(piece, (old_row, old_col), (new_row, new_col), board):
+                   board[new_row][new_col] = piece
+                   board[old_row][old_col] = None
+                   selected_piece = None
 
             elif event.type == pygame.MOUSEMOTION:
                 if selected_piece:
