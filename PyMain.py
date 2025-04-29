@@ -1,6 +1,6 @@
 import pygame
 import sys
-
+# CHESS BOARD
 # Constants
 WIDTH, HEIGHT = 640, 640
 ROWS, COLS = 8, 8
