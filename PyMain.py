@@ -82,50 +82,6 @@ def is_valid_move(piece, start, end, board, en_passant_target):
                 return True
         elif abs(dc) == 1 and dr == direction and destination and destination[0] != color:
             return True
-
-    elif piece_type == 'r':  # Rook
-        if dr == 0 or dc == 0:
-            return path_is_clear(start, end, board)
-
-    elif piece_type == 'n':  # Knight
-        if (abs(dr), abs(dc)) in [(2, 1), (1, 2)]:
-            return True
-
-    elif piece_type == 'b':  # Bishop
-        if abs(dr) == abs(dc):
-            return path_is_clear(start, end, board)
-
-    elif piece_type == 'q':  # Queen
-        if dr == 0 or dc == 0 or abs(dr) == abs(dc):
-            return path_is_clear(start, end, board)
-
-    elif piece_type == 'k':  # King
-        if max(abs(dr), abs(dc)) == 1:
-            return True
-
-    return False  # Invalid move
-def is_valid_move(piece, start, end, board):
-    piece_type = piece[1]  # 'p', 'r', 'n', 'b', 'q', 'k'
-    color = piece[0]       # 'w' or 'b'
-    start_row, start_col = start
-    end_row, end_col = end
-    dr = end_row - start_row
-    dc = end_col - start_col
-
-    destination = board[end_row][end_col]
-    if destination and destination[0] == color:
-        return False  # Can't capture own piece
-
-    if piece_type == 'p':  # Pawn
-        direction = -1 if color == 'w' else 1
-        start_row_home = 6 if color == 'w' else 1
-        if dc == 0:
-            if dr == direction and not destination:
-                return True
-            if dr == 2 * direction and start_row == start_row_home and not board[start_row + direction][start_col] and not destination:
-                return True
-        elif abs(dc) == 1 and dr == direction and destination and destination[0] != color:
-            return True
         #En Passant Capture
         elif abs(dc) == 1 and dr == direction and (end_row, end_col) == en_passant_target:
             return True
