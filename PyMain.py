@@ -1,4 +1,5 @@
 import pygame
+pygame.mixer.quit()
 import sys
 # CHESS BOARD
 # Constants
