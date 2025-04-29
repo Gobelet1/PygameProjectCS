@@ -60,7 +60,7 @@ def draw_pieces(win, board, images, selected_piece):
 def get_row_col_from_mouse(pos):
     x, y = pos
     return y // SQUARE_SIZE, x // SQUARE_SIZE
-def is_valid_move(piece, start, end, board):
+def is_valid_move(piece, start, end, board, en_passant_target):
     piece_type = piece[1]  # 'p', 'r', 'n', 'b', 'q', 'k'
     color = piece[0]       # 'w' or 'b'
     start_row, start_col = start
@@ -211,7 +211,7 @@ def main():
                    piece = selected_piece['piece']
 
                    if 0 <= new_row < 8 and 0 <= new_col < 8:
-                       if is_valid_move(piece, (old_row, old_col), (new_row, new_col), board):
+                       if is_valid_move(piece, (old_row, old_col), (new_row, new_col), board, en_passant_target):
                            board[new_row][new_col] = piece
                            board[old_row][old_col] = None
                            # En passant capture
