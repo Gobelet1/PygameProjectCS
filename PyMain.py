@@ -167,6 +167,14 @@ def main():
     selected_piece = None
     en_passant_target = None  # Will be set to (row, col) of capturable pawn
     turn = 'w' #White starts
+    has_moved = {
+    'w_king': False,
+    'w_rook_ks': False,
+    'w_rook_qs': False,
+    'b_king': False,
+    'b_rook_ks': False,
+    'b_rook_qs': False
+    }
     run = True
     while run:
         clock.tick(60)
