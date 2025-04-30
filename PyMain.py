@@ -104,7 +104,39 @@ def is_valid_move(piece, start, end, board, en_passant_target):
 
     elif piece_type == 'k':  # King
         if max(abs(dr), abs(dc)) == 1:
-            return True
+        return True  # normal king move
+
+        # Castling
+        if dr == 0 and abs(dc) == 2:
+            # Kingside or Queenside
+            rook_col = 7 if dc > 0 else 0
+            rook = board[start_row][rook_col]
+            if not rook or rook[1] != 'r' or rook[0] != color:
+                return False
+
+            # Check if path is clear
+            step = 1 if dc > 0 else -1
+            for c in range(start_col + step, rook_col, step):
+                if board[start_row][c] is not None:
+                    return False
+
+        # Check if king or rook has moved
+            if color == 'w':
+                if has_moved['w_king']:
+                    return False
+                if dc > 0 and has_moved['w_rook_ks']:
+                    return False
+                if dc < 0 and has_moved['w_rook_qs']:
+                    return False
+            else:
+                if has_moved['b_king']:
+                    return False
+                if dc > 0 and has_moved['b_rook_ks']:
+                    return False
+                if dc < 0 and has_moved['b_rook_qs']:
+                    return False
+
+            return True  # Castling allowed
 
     return False  # Invalid move
 def path_is_clear(start, end, board):
@@ -136,7 +168,6 @@ def main():
     selected_piece = None
     en_passant_target = None  # Will be set to (row, col) of capturable pawn
     turn = 'w' #White starts
-
     run = True
     while run:
         clock.tick(60)
@@ -170,7 +201,28 @@ def main():
                        if is_valid_move(piece, (old_row, old_col), (new_row, new_col), board, en_passant_target):
                            board[new_row][new_col] = piece
                            board[old_row][old_col] = None
-                           # En passant capture
+                       # Castling
+                       if piece[1] == 'k' and abs(new_col - old_col) == 2:
+                           if new_col > old_col:  # Kingside
+                               board[new_row][5] = board[new_row][7]
+                               board[new_row][7] = None
+                           else:  # Queenside
+                               board[new_row][3] = board[new_row][0]
+                               board[new_row][0] = None
+                       # Update movement flags
+                       if piece == 'wk':
+                           has_moved['w_king'] = True
+                       elif piece == 'bk':
+                           has_moved['b_king'] = True
+                       elif piece == 'wr' and old_col == 0:
+                           has_moved['w_rook_qs'] = True
+                       elif piece == 'wr' and old_col == 7:
+                           has_moved['w_rook_ks'] = True
+                       elif piece == 'br' and old_col == 0:
+                           has_moved['b_rook_qs'] = True
+                       elif piece == 'br' and old_col == 7:
+                           has_moved['b_rook_ks'] = True
+                       # En passant capture
                        if piece[1] == 'p' and (new_row, new_col) == en_passant_target:
                            board[old_row][new_col] = None  # Remove the captured pawn
 
