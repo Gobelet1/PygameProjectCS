@@ -192,11 +192,11 @@ def main():
                 row, col = get_row_col_from_mouse(pygame.mouse.get_pos())
                 piece = board[row][col]
                 if piece and piece[0] == turn:  # Only allow selecting current player's piece
-                        selected_piece = {
-                        'piece': piece,
-                        'pos': (row, col),
-                        'mouse_pos': pygame.mouse.get_pos()
-                        }
+                    selected_piece = {
+                    'piece': piece,
+                    'pos': (row, col),
+                    'mouse_pos': pygame.mouse.get_pos()
+                    }
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 if selected_piece:
