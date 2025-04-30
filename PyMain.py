@@ -192,49 +192,54 @@ def main():
                         }
 
             elif event.type == pygame.MOUSEBUTTONUP:
-               if selected_piece:
-                   new_row, new_col = get_row_col_from_mouse(pygame.mouse.get_pos())
-                   old_row, old_col = selected_piece['pos']
-                   piece = selected_piece['piece']
+                if selected_piece:
+                    new_row, new_col = get_row_col_from_mouse(pygame.mouse.get_pos())
+                    old_row, old_col = selected_piece['pos']
+                    piece = selected_piece['piece']
 
-                   if 0 <= new_row < 8 and 0 <= new_col < 8:
-                       if is_valid_move(piece, (old_row, old_col), (new_row, new_col), board, en_passant_target):
-                           board[new_row][new_col] = piece
-                           board[old_row][old_col] = None
-                       # Castling
-                       if piece[1] == 'k' and abs(new_col - old_col) == 2:
-                           if new_col > old_col:  # Kingside
-                               board[new_row][5] = board[new_row][7]
-                               board[new_row][7] = None
-                           else:  # Queenside
-                               board[new_row][3] = board[new_row][0]
-                               board[new_row][0] = None
-                       # Update movement flags
-                       if piece == 'wk':
-                           has_moved['w_king'] = True
-                       elif piece == 'bk':
-                           has_moved['b_king'] = True
-                       elif piece == 'wr' and old_col == 0:
-                           has_moved['w_rook_qs'] = True
-                       elif piece == 'wr' and old_col == 7:
-                           has_moved['w_rook_ks'] = True
-                       elif piece == 'br' and old_col == 0:
-                           has_moved['b_rook_qs'] = True
-                       elif piece == 'br' and old_col == 7:
-                           has_moved['b_rook_ks'] = True
-                       # En passant capture
-                       if piece[1] == 'p' and (new_row, new_col) == en_passant_target:
-                           board[old_row][new_col] = None  # Remove the captured pawn
+                    if 0 <= new_row < 8 and 0 <= new_col < 8:
+                        if is_valid_move(piece, (old_row, old_col), (new_row, new_col), board, en_passant_target):
+                            # Move piece
+                            board[new_row][new_col] = piece
+                            board[old_row][old_col] = None
 
-                       # Handle en passant eligibility
-                       if piece[1] == 'p' and abs(new_row - old_row) == 2:
-                           en_passant_target = ((old_row + new_row) // 2, new_col)
-                       else:
-                           en_passant_target = None
+                            # Castling
+                            if piece[1] == 'k' and abs(new_col - old_col) == 2:
+                                if new_col > old_col:  # Kingside
+                                    board[new_row][5] = board[new_row][7]
+                                    board[new_row][7] = None
+                                else:  # Queenside
+                                    board[new_row][3] = board[new_row][0]
+                                    board[new_row][0] = None
 
-                       turn = 'b' if turn == 'w' else 'w'
-                   selected_piece = None
+                            # Update movement flags
+                            if piece == 'wk':
+                                has_moved['w_king'] = True
+                            elif piece == 'bk':
+                                has_moved['b_king'] = True
+                            elif piece == 'wr' and old_col == 0:
+                                has_moved['w_rook_qs'] = True
+                            elif piece == 'wr' and old_col == 7:
+                                has_moved['w_rook_ks'] = True
+                            elif piece == 'br' and old_col == 0:
+                                has_moved['b_rook_qs'] = True
+                            elif piece == 'br' and old_col == 7:
+                                has_moved['b_rook_ks'] = True
 
+                            # En passant capture
+                            if piece[1] == 'p' and (new_row, new_col) == en_passant_target:
+                                board[old_row][new_col] = None  # Remove captured pawn
+
+                            # En passant eligibility
+                            if piece[1] == 'p' and abs(new_row - old_row) == 2:
+                                en_passant_target = ((old_row + new_row) // 2, new_col)
+                            else:
+                                en_passant_target = None
+
+                            # Switch turn
+                            turn = 'b' if turn == 'w' else 'w'
+
+                    selected_piece = None
             elif event.type == pygame.MOUSEMOTION:
                 if selected_piece:
                     selected_piece['mouse_pos'] = pygame.mouse.get_pos()
