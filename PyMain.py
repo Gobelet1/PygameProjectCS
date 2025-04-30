@@ -104,23 +104,22 @@ def is_valid_move(piece, start, end, board, en_passant_target):
 
     elif piece_type == 'k':  # King
         if max(abs(dr), abs(dc)) == 1:
-        return True  # normal king move
+            return True  # normal king move
 
         # Castling
         if dr == 0 and abs(dc) == 2:
-            # Kingside or Queenside
             rook_col = 7 if dc > 0 else 0
             rook = board[start_row][rook_col]
             if not rook or rook[1] != 'r' or rook[0] != color:
                 return False
 
-            # Check if path is clear
+            # Check path clear between king and rook
             step = 1 if dc > 0 else -1
             for c in range(start_col + step, rook_col, step):
                 if board[start_row][c] is not None:
                     return False
 
-        # Check if king or rook has moved
+            # Check if king or rook has moved
             if color == 'w':
                 if has_moved['w_king']:
                     return False
