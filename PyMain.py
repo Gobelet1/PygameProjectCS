@@ -61,8 +61,8 @@ def get_row_col_from_mouse(pos):
     x, y = pos
     return y // SQUARE_SIZE, x // SQUARE_SIZE
 def is_valid_move(piece, start, end, board, en_passant_target, has_moved):
-    piece_type = piece[1]  # 'p', 'r', 'n', 'b', 'q', 'k'
-    color = piece[0]       # 'w' or 'b'
+    piece_type = piece[1]
+    color = piece[0]
     start_row, start_col = start
     end_row, end_col = end
     dr = end_row - start_row
@@ -75,16 +75,18 @@ def is_valid_move(piece, start, end, board, en_passant_target, has_moved):
     if piece_type == 'p':  # Pawn
         direction = -1 if color == 'w' else 1
         start_row_home = 6 if color == 'w' else 1
+
         if dc == 0:
             if dr == direction and not destination:
                 return True
             if dr == 2 * direction and start_row == start_row_home and not board[start_row + direction][start_col] and not destination:
                 return True
-        elif abs(dc) == 1 and dr == direction and destination and destination[0] != color:
-            return True
-        #En Passant Capture
-        elif abs(dc) == 1 and dr == direction and (end_row, end_col) == en_passant_target:
-            return True
+        elif abs(dc) == 1 and dr == direction:
+            if destination and destination[0] != color:
+                return True
+            # En passant
+            if (end_row, end_col) == en_passant_target and not destination:
+                return True
 
     elif piece_type == 'r':  # Rook
         if dr == 0 or dc == 0:
@@ -104,7 +106,7 @@ def is_valid_move(piece, start, end, board, en_passant_target, has_moved):
 
     elif piece_type == 'k':  # King
         if max(abs(dr), abs(dc)) == 1:
-            return True  # normal king move
+            return True  # Normal king move
 
         # Castling
         if dr == 0 and abs(dc) == 2:
@@ -113,13 +115,13 @@ def is_valid_move(piece, start, end, board, en_passant_target, has_moved):
             if not rook or rook[1] != 'r' or rook[0] != color:
                 return False
 
-            # Check path clear between king and rook
+            # Check path between king and rook is clear
             step = 1 if dc > 0 else -1
             for c in range(start_col + step, rook_col, step):
                 if board[start_row][c] is not None:
                     return False
 
-            # Check if king or rook has moved
+            # Check movement flags
             if color == 'w':
                 if has_moved['w_king']:
                     return False
@@ -135,9 +137,9 @@ def is_valid_move(piece, start, end, board, en_passant_target, has_moved):
                 if dc < 0 and has_moved['b_rook_qs']:
                     return False
 
-            return True  # Castling allowed
+            return True
 
-    return False  # Invalid move
+    return False
 def path_is_clear(start, end, board):
     r1, c1 = start
     r2, c2 = end
@@ -165,16 +167,17 @@ def main():
     images = load_images()
     board = init_board()
     selected_piece = None
-    en_passant_target = None  # Will be set to (row, col) of capturable pawn
-    turn = 'w' #White starts
+    en_passant_target = None  # For en passant logic
+    turn = 'w'  # White starts
     has_moved = {
-    'w_king': False,
-    'w_rook_ks': False,
-    'w_rook_qs': False,
-    'b_king': False,
-    'b_rook_ks': False,
-    'b_rook_qs': False
+        'w_king': False,
+        'w_rook_ks': False,
+        'w_rook_qs': False,
+        'b_king': False,
+        'b_rook_ks': False,
+        'b_rook_qs': False
     }
+
     run = True
     while run:
         clock.tick(60)
@@ -191,11 +194,11 @@ def main():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 row, col = get_row_col_from_mouse(pygame.mouse.get_pos())
                 piece = board[row][col]
-                if piece and piece[0] == turn:  # Only allow selecting current player's piece
+                if piece and piece[0] == turn:  # Ensure correct turn
                     selected_piece = {
-                    'piece': piece,
-                    'pos': (row, col),
-                    'mouse_pos': pygame.mouse.get_pos()
+                        'piece': piece,
+                        'pos': (row, col),
+                        'mouse_pos': pygame.mouse.get_pos()
                     }
 
             elif event.type == pygame.MOUSEBUTTONUP:
@@ -206,11 +209,15 @@ def main():
 
                     if 0 <= new_row < 8 and 0 <= new_col < 8:
                         if is_valid_move(piece, (old_row, old_col), (new_row, new_col), board, en_passant_target, has_moved):
-                            # Move piece
+                            # En passant capture (before actual move)
+                            if piece[1] == 'p' and (new_row, new_col) == en_passant_target:
+                                board[old_row][new_col] = None  # Capture the pawn
+
+                            # Move the piece
                             board[new_row][new_col] = piece
                             board[old_row][old_col] = None
 
-                            # Castling
+                            # Castling move
                             if piece[1] == 'k' and abs(new_col - old_col) == 2:
                                 if new_col > old_col:  # Kingside
                                     board[new_row][5] = board[new_row][7]
@@ -219,23 +226,19 @@ def main():
                                     board[new_row][3] = board[new_row][0]
                                     board[new_row][0] = None
 
-                            # Update movement flags
+                            # Update movement flags for castling
                             if piece == 'wk':
                                 has_moved['w_king'] = True
                             elif piece == 'bk':
                                 has_moved['b_king'] = True
-                            elif piece == 'wr' and old_col == 0:
+                            elif piece == 'wr' and old_row == 7 and old_col == 0:
                                 has_moved['w_rook_qs'] = True
-                            elif piece == 'wr' and old_col == 7:
+                            elif piece == 'wr' and old_row == 7 and old_col == 7:
                                 has_moved['w_rook_ks'] = True
-                            elif piece == 'br' and old_col == 0:
+                            elif piece == 'br' and old_row == 0 and old_col == 0:
                                 has_moved['b_rook_qs'] = True
-                            elif piece == 'br' and old_col == 7:
+                            elif piece == 'br' and old_row == 0 and old_col == 7:
                                 has_moved['b_rook_ks'] = True
-
-                            # En passant capture
-                            if piece[1] == 'p' and (new_row, new_col) == en_passant_target:
-                                board[old_row][new_col] = None  # Remove captured pawn
 
                             # En passant eligibility
                             if piece[1] == 'p' and abs(new_row - old_row) == 2:
@@ -247,6 +250,7 @@ def main():
                             turn = 'b' if turn == 'w' else 'w'
 
                     selected_piece = None
+
             elif event.type == pygame.MOUSEMOTION:
                 if selected_piece:
                     selected_piece['mouse_pos'] = pygame.mouse.get_pos()
