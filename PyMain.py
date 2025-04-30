@@ -231,20 +231,25 @@ def main():
                                     board[new_row][0] = None
 
                             # Update has_moved
-                            if piece == 'wk':
-                                has_moved['w_king'] = True
-                            elif piece == 'bk':
-                                has_moved['b_king'] = True
-                            elif piece == 'wr':
-                                if old_row == 7 and old_col == 0:
-                                    has_moved['w_rook_qs'] = True
-                                elif old_row == 7 and old_col == 7:
-                                    has_moved['w_rook_ks'] = True
-                            elif piece == 'br':
-                                if old_row == 0 and old_col == 0:
-                                    has_moved['b_rook_qs'] = True
-                                elif old_row == 0 and old_col == 7:
-                                    has_moved['b_rook_ks'] = True
+                            # Track if king moved
+                            if piece[1] == 'k':
+                                if piece[0] == 'w':
+                                    has_moved['w_king'] = True
+                                else:
+                                    has_moved['b_king'] = True
+
+                            # Track if rook moved
+                            elif piece[1] == 'r':
+                                if piece[0] == 'w':
+                                    if old_row == 7 and old_col == 0:
+                                        has_moved['w_rook_qs'] = True
+                                    elif old_row == 7 and old_col == 7:
+                                        has_moved['w_rook_ks'] = True
+                                else:
+                                    if old_row == 0 and old_col == 0:
+                                        has_moved['b_rook_qs'] = True
+                                    elif old_row == 0 and old_col == 7:
+                                        has_moved['b_rook_ks'] = True
 
                             # Set en passant target
                             if piece[1] == 'p' and abs(new_row - old_row) == 2:
