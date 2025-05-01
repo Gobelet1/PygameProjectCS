@@ -1,9 +1,6 @@
 import pygame
 import sys
 
-# CHESS BOARD
-pygame.mixer.quit()
-
 # Constants
 WIDTH, HEIGHT = 640, 640
 ROWS, COLS = 8, 8
@@ -12,6 +9,8 @@ SQUARE_SIZE = WIDTH // COLS
 # Colors
 WHITE = (232, 235, 239)
 GRAY = (125, 135, 150)
+PROMO_BG = (200, 200, 200)
+PROMO_BORDER = (50, 50, 50)
 
 # Load images
 def load_images():
@@ -24,23 +23,19 @@ def load_images():
         )
     return images
 
-# Draw board
 def draw_board(win):
     for row in range(ROWS):
         for col in range(COLS):
             color = WHITE if (row + col) % 2 == 0 else GRAY
             pygame.draw.rect(win, color, (col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
-# Initialize pieces on board
 def init_board():
     board = [[None for _ in range(COLS)] for _ in range(ROWS)]
 
-    # Pawns
     for i in range(COLS):
         board[1][i] = 'bp'
         board[6][i] = 'wp'
 
-    # Back rank pieces
     order = ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r']
     for i in range(COLS):
         board[0][i] = 'b' + order[i]
@@ -48,7 +43,6 @@ def init_board():
 
     return board
 
-# Draw pieces
 def draw_pieces(win, board, images, selected_piece):
     for row in range(ROWS):
         for col in range(COLS):
@@ -58,12 +52,10 @@ def draw_pieces(win, board, images, selected_piece):
                     continue
                 win.blit(images[piece], (col*SQUARE_SIZE, row*SQUARE_SIZE))
 
-# Get row/col from mouse position
 def get_row_col_from_mouse(pos):
     x, y = pos
     return y // SQUARE_SIZE, x // SQUARE_SIZE
 
-# Path checking for sliding pieces
 def path_is_clear(start, end, board):
     r1, c1 = start
     r2, c2 = end
@@ -81,7 +73,6 @@ def path_is_clear(start, end, board):
         c += step_c
     return True
 
-# Valid move logic
 def is_valid_move(piece, start, end, board, en_passant_target, has_moved):
     piece_type = piece[1]
     color = piece[0]
@@ -94,7 +85,7 @@ def is_valid_move(piece, start, end, board, en_passant_target, has_moved):
     if destination and destination[0] == color:
         return False
 
-    if piece_type == 'p':  # Pawn
+    if piece_type == 'p':
         direction = -1 if color == 'w' else 1
         start_row_home = 6 if color == 'w' else 1
 
@@ -109,40 +100,37 @@ def is_valid_move(piece, start, end, board, en_passant_target, has_moved):
             if en_passant_target and (end_row, end_col) == en_passant_target and not destination:
                 return True
 
-    elif piece_type == 'r':  # Rook
+    elif piece_type == 'r':
         if dr == 0 or dc == 0:
             return path_is_clear(start, end, board)
 
-    elif piece_type == 'n':  # Knight
+    elif piece_type == 'n':
         if (abs(dr), abs(dc)) in [(2, 1), (1, 2)]:
             return True
 
-    elif piece_type == 'b':  # Bishop
+    elif piece_type == 'b':
         if abs(dr) == abs(dc):
             return path_is_clear(start, end, board)
 
-    elif piece_type == 'q':  # Queen
+    elif piece_type == 'q':
         if dr == 0 or dc == 0 or abs(dr) == abs(dc):
             return path_is_clear(start, end, board)
 
-    elif piece_type == 'k':  # King
+    elif piece_type == 'k':
         if max(abs(dr), abs(dc)) == 1:
             return True
 
-        # Castling
         if dr == 0 and abs(dc) == 2:
             rook_col = 7 if dc > 0 else 0
             rook = board[start_row][rook_col]
             if not rook or rook[1] != 'r' or rook[0] != color:
                 return False
 
-            # Check clear path
             step = 1 if dc > 0 else -1
             for c in range(start_col + step, rook_col, step):
                 if board[start_row][c] is not None:
                     return False
 
-            # Check castling rights
             if color == 'w':
                 if has_moved['w_king']:
                     return False
@@ -162,10 +150,41 @@ def is_valid_move(piece, start, end, board, en_passant_target, has_moved):
 
     return False
 
+def choose_promotion_piece(win, color, images, board):
+    options = ['q', 'r', 'b', 'n']
+    selecting = True
+    draw_board(win)
+    draw_pieces(win, board, images, None)
+
+    # Draw selection UI
+    size = SQUARE_SIZE
+    start_x = WIDTH // 2 - 2 * size
+    start_y = HEIGHT // 2 - size // 2
+
+    for i, opt in enumerate(options):
+        rect = pygame.Rect(start_x + i * size, start_y, size, size)
+        pygame.draw.rect(win, PROMO_BG, rect)
+        pygame.draw.rect(win, PROMO_BORDER, rect, 2)
+        win.blit(images[color + opt], (rect.x, rect.y))
+
+    pygame.display.flip()
+
+    while selecting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mx, my = pygame.mouse.get_pos()
+                for i in range(len(options)):
+                    rect = pygame.Rect(start_x + i * size, start_y, size, size)
+                    if rect.collidepoint(mx, my):
+                        return options[i]
+
 def main():
     pygame.init()
     win = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("Basic Chess")
+    pygame.display.set_caption("Basic Chess with Promotion")
     clock = pygame.time.Clock()
 
     images = load_images()
@@ -213,30 +232,30 @@ def main():
 
                     if 0 <= new_row < 8 and 0 <= new_col < 8:
                         if is_valid_move(piece, (old_row, old_col), (new_row, new_col), board, en_passant_target, has_moved):
-                            # En passant capture
                             if piece[1] == 'p' and en_passant_target and (new_row, new_col) == en_passant_target:
                                 board[old_row][new_col] = None
 
-                            # Move piece
-                            board[new_row][new_col] = piece
                             board[old_row][old_col] = None
 
                             # Castling rook move
                             if piece[1] == 'k' and abs(new_col - old_col) == 2:
-                                if new_col > old_col:  # Kingside
+                                if new_col > old_col:
                                     board[new_row][5] = board[new_row][7]
                                     board[new_row][7] = None
-                                else:  # Queenside
+                                else:
                                     board[new_row][3] = board[new_row][0]
                                     board[new_row][0] = None
 
-                            # Update has_moved
-                            if piece[1] == 'k':
-                                if piece[0] == 'w':
-                                    has_moved['w_king'] = True
-                                else:
-                                    has_moved['b_king'] = True
+                            # Promotion
+                            if piece[1] == 'p' and (new_row == 0 or new_row == 7):
+                                promotion = choose_promotion_piece(win, piece[0], images, board)
+                                board[new_row][new_col] = piece[0] + promotion
+                            else:
+                                board[new_row][new_col] = piece
 
+                            # has_moved tracking
+                            if piece[1] == 'k':
+                                has_moved[f'{piece[0]}_king'] = True
                             elif piece[1] == 'r':
                                 if piece[0] == 'w':
                                     if old_row == 7 and old_col == 0:
@@ -249,17 +268,11 @@ def main():
                                     elif old_row == 0 and old_col == 7:
                                         has_moved['b_rook_ks'] = True
 
-                            # Pawn promotion (to Queen by default)
-                            if piece[1] == 'p' and (new_row == 0 or new_row == 7):
-                                board[new_row][new_col] = piece[0] + 'q'
-
-                            # Set en passant target
                             if piece[1] == 'p' and abs(new_row - old_row) == 2:
                                 en_passant_target = ((old_row + new_row) // 2, new_col)
                             else:
                                 en_passant_target = None
 
-                            # Switch turn
                             turn = 'b' if turn == 'w' else 'w'
 
                     selected_piece = None
