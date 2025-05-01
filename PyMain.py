@@ -231,14 +231,12 @@ def main():
                                     board[new_row][0] = None
 
                             # Update has_moved
-                            # Track if king moved
                             if piece[1] == 'k':
                                 if piece[0] == 'w':
                                     has_moved['w_king'] = True
                                 else:
                                     has_moved['b_king'] = True
 
-                            # Track if rook moved
                             elif piece[1] == 'r':
                                 if piece[0] == 'w':
                                     if old_row == 7 and old_col == 0:
@@ -250,6 +248,10 @@ def main():
                                         has_moved['b_rook_qs'] = True
                                     elif old_row == 0 and old_col == 7:
                                         has_moved['b_rook_ks'] = True
+
+                            # Pawn promotion (to Queen by default)
+                            if piece[1] == 'p' and (new_row == 0 or new_row == 7):
+                                board[new_row][new_col] = piece[0] + 'q'
 
                             # Set en passant target
                             if piece[1] == 'p' and abs(new_row - old_row) == 2:
