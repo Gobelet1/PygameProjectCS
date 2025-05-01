@@ -52,6 +52,20 @@ def draw_pieces(win, board, images, selected_piece):
                     continue
                 win.blit(images[piece], (col*SQUARE_SIZE, row*SQUARE_SIZE))
 
+def check_winner(board):
+    white_king = black_king = False
+    for row in board:
+        for piece in row:
+            if piece == 'wk':
+                white_king = True
+            elif piece == 'bk':
+                black_king = True
+    if not white_king:
+        return 'Black wins!'
+    if not black_king:
+        return 'White wins!'
+    return None
+
 def get_row_col_from_mouse(pos):
     x, y = pos
     return y // SQUARE_SIZE, x // SQUARE_SIZE
@@ -274,6 +288,32 @@ def main():
                                 en_passant_target = None
 
                             turn = 'b' if turn == 'w' else 'w'
+
+                            winner = check_winner(board)
+                            if winner:
+                                font = pygame.font.SysFont('Arial', 48)
+                                text = font.render(winner, True, (0, 0, 0))
+                                text_rect = text.get_rect(center=(WIDTH//2, HEIGHT//2))
+                                draw_board(win)
+                                draw_pieces(win, board, images, None)
+                                win.blit(text, text_rect)
+                                pygame.display.flip()
+                                pygame.time.wait(3000)  # Show result for 3 seconds
+
+                                # Restart game
+                                board = init_board()
+                                selected_piece = None
+                                en_passant_target = None
+                                turn = 'w'
+                                has_moved = {
+                                    'w_king': False,
+                                    'w_rook_ks': False,
+                                    'w_rook_qs': False,
+                                    'b_king': False,
+                                    'b_rook_ks': False,
+                                    'b_rook_qs': False
+                                }
+                                continue
 
                     selected_piece = None
 
